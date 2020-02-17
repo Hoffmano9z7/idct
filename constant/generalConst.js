@@ -6,6 +6,9 @@ const RES_STATUS = {
 
 const JWT_TOKEN = 'idctHomeWork';
 
+const MAX_ROOM_AMOUNT = 3;
+
+
 module.exports = {
     RES_STATUS,
     JWT_TOKEN

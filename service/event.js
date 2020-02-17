@@ -1,11 +1,13 @@
+const { OPEN } = require('ws');
 const jwt = require('jsonwebtoken');
 const handleLogin = require('./login');
 const { handleGetRoom, handleEnterRoom } = require('./room');
 const { JWT_TOKEN, RES_STATUS } = require('../constant/generalConst');
 
-module.exports = (ws, msg) => {
+module.exports = (wss, ws, msg) => {
     try {
         console.log('[handleEvent] - Start');
+        let isBraodcast = false;
         const payload = JSON.parse(msg);
         const { token, event } = payload;
         console.log('[handleEvent] - Payload:');
@@ -29,15 +31,24 @@ module.exports = (ws, msg) => {
                     console.log(decoded);
                     let res = {};
                     if('getRoom' === event) {
-                        res = handleGetRoom(ws, { ...payload, ...decoded });
+                        res = handleGetRoom({ ...payload, ...decoded });
                     } else if('enterRoom' === event) {
-                        res = handleEnterRoom(ws, { ...payload, ...decoded });
+                        isBraodcast = true;
+                        res = handleEnterRoom({ ...payload, ...decoded });
                     } else {
                         throw 'No a valid event.';
                     }
                     res = JSON.stringify(res);
                     console.log(`[handleEvent] - Response: ${res}`);
-                    ws.send(res);
+                    if (isBraodcast) {
+                        wss.clients.forEach( client => {
+                            if (client.readyState === OPEN) {
+                                client.send(res);
+                            }
+                        });
+                    } else {
+                        ws.send(res);
+                    }
                 }
             });
         }
