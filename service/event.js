@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const handleLogin = require('./login');
-const { RES_STATUS } = require('../constant/generalConst');
+const { handleGetRoom, handleEnterRoom } = require('./room');
+const { JWT_TOKEN, RES_STATUS } = require('../constant/generalConst');
 
 module.exports = (ws, msg) => {
     try {
@@ -27,8 +28,10 @@ module.exports = (ws, msg) => {
                     console.log('[handleEvent] - JWT decoded:');
                     console.log(decoded);
                     let res = {};
-                    if('room' === event) {
-
+                    if('getRoom' === event) {
+                        res = handleGetRoom(ws, { ...payload, ...decoded });
+                    } else if('enterRoom' === event) {
+                        res = handleEnterRoom(ws, { ...payload, ...decoded });
                     } else {
                         throw 'No a valid event.';
                     }

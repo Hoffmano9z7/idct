@@ -9,7 +9,7 @@ module.exports = (ws, payload) => {
     const user = {
         id: "abc"
     }
-    const token = signAuth(payload);
+    const token = signAuth(user);
     let res = {
         status: RES_STATUS.S,
         id: user.id,
