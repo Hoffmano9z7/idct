@@ -3,16 +3,14 @@ const { signAuth } = require('../util/generalUtil');
 
 module.exports = (ws, payload) => {
     console.log('[handleLogin] - Start');
-    const { id, pw } = payload;
-
-    //TODO: dummy user. Add DAO to access db
+    const { id } = payload;
     const user = {
-        id: "abc"
+        id
     }
     const token = signAuth(user);
     let res = {
         status: RES_STATUS.S,
-        id: user.id,
+        id,
         token
     }
     res = JSON.stringify(res);

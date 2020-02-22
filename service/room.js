@@ -1,11 +1,12 @@
 const { RES_STATUS, MAX_ROOM_AMOUNT } = require('../constant/generalConst');
-const { isObjEmpty } = require('../util/generalUtil');
+const { signAuth } = require('../util/generalUtil');
 
 let room = [];
 const roomSchma = {
     a: '',
     b: '',
     s: [],
+    isPlaying: false,
 }
 
 const createDefaultRoom = () => {
@@ -18,8 +19,8 @@ createDefaultRoom();
 const handleGetRoom = payload => {
     console.log('[handleGetRoom] - Start');
     const { id } = payload;
-    const token = signAuth(id);
-    let res = {
+    const token = signAuth({id});
+    const res = {
         status: RES_STATUS.S,
         room,
         token
@@ -30,26 +31,57 @@ const handleGetRoom = payload => {
 
 const handleEnterRoom = payload => {
     console.log('[handleEnterRoom] - Start');
-
     const { roomNum, id } = payload;
     let newRoomObj = room[roomNum];
-    if(!newRoomObj.a) {
-        newRoomObj.a = id;
-    } else if (!newRoomObj.b) {
-        newRoomObj.b = id;
-    } else {
+    if (newRoomObj.isPlaying) {
         newRoomObj.s.push(id);
+    } else {
+        if(!newRoomObj.a) {
+            newRoomObj.a = id;
+        } else if (!newRoomObj.b) {
+            newRoomObj.b = id;
+        } else {
+            newRoomObj.s.push(id);
+        }
     }
-    console.log('test');
-    let res = {
+    const token = signAuth({id});
+    const res = {
         status: RES_STATUS.S,
         room,
+        token
     }
     console.log('[handleEnterRoom] - End');
+    return res;
+}
+
+const handleExitRoom = payload => {
+    console.log('[handleExitRoom] - Start');
+    let isRequestValid = false;
+    const { roomNum, id } = payload;
+    let newRoomObj = room[roomNum];
+    for (const key in newRoomObj) {
+        if(id === newRoomObj[key]) {
+            if ('a' === key || 'b' === key)
+                newRoomObj.isPlaying = false;
+            newRoomObj[key] = '';
+            isRequestValid = true;
+            break;
+        }
+    }
+    const token = signAuth({id});
+    const res = {
+        status: RES_STATUS.S,
+        room,
+        token
+    }
+    console.log('[handleExitRoom] - End');
+    if (!isRequestValid)
+        throw 'User is not in this room!';
     return res;
 }
 
 module.exports = {
     handleGetRoom, 
     handleEnterRoom,
+    handleExitRoom,
 }
