@@ -1,19 +1,17 @@
 const { OPEN } = require('ws');
 const jwt = require('jsonwebtoken');
 const handleLogin = require('./login');
-const { handleGetRoom, handleEnterRoom, handleExitRoom } = require('./room');
-const { JWT_TOKEN, RES_STATUS } = require('../constant/generalConst');
+const { handleGetRoom, handleEnterRoom, handleExitRoom, handleStartGame, handleMove } = require('./room');
+const { JWT_TOKEN, RES_STATUS, EVENT, TARGET } = require('../constant/generalConst');
 
 module.exports = (wss, ws, msg) => {
     try {
         console.log('[handleEvent] - Start');
-        let isBraodcast = false;
         const payload = JSON.parse(msg);
         const { token, event } = payload;
         console.log('[handleEvent] - Payload:');
         console.log(msg);
-
-        if('login' === event) {
+        if(EVENT.LOGIN === event) {
             handleLogin(ws, payload);
         } else {
             jwt.verify(token, JWT_TOKEN, (err, decoded) => {
@@ -27,25 +25,40 @@ module.exports = (wss, ws, msg) => {
                     ws.send(res);
                     ws.terminate();
                 } else {
+                    let resTarget = TARGET.SELF;
+                    let res = {};
                     console.log('[handleEvent] - JWT decoded:');
                     console.log(decoded);
-                    let res = {};
-                    if('getRoom' === event) {
+                    if(EVENT.GET_ROOM === event) {
                         res = handleGetRoom({ ...payload, ...decoded });
-                    } else if('enterRoom' === event) {
-                        isBraodcast = true;
-                        res = handleEnterRoom({ ...payload, ...decoded });
-                    } else if ('exitRoom' === event) {
-                        isBraodcast = true;
-                        res = handleExitRoom({ ...payload, ...decoded });
+                    } else if(EVENT.ENTER_ROOM === event) {
+                        resTarget = TARGET.BROADCAST;
+                        res = handleEnterRoom(ws, { ...payload, ...decoded });
+                    } else if (EVENT.EXIT_ROOM === event) {
+                        resTarget = TARGET.BROADCAST;
+                        res = handleExitRoom(ws, { ...payload, ...decoded });
+                    } else if (EVENT.READY === event) {
+                        resTarget = TARGET.ROOM;
+                        res = handlePlayerReady({ ...payload, ...decoded });
+                    } else if (EVENT.START_GAME === event) {
+                        res = handleStartGame({ ...payload, ...decoded });
+                    } else if (EVENT.MOVE === event) {
+                        res = handleMove({ ...payload, ...decoded });
                     } else {
                         throw "No a valid event.";
                     }
                     res = JSON.stringify(res);
                     console.log(`[handleEvent] - Response: ${res}`);
-                    if (isBraodcast) {
+                    if (TARGET.BROADCAST === resTarget) {
                         wss.clients.forEach( client => {
                             if (client.readyState === OPEN) {
+                                client.send(res);
+                            }
+                        });
+                    } else if(TARGET.ROOM === resTarget) {
+                        const t = ws.room;
+                        wss.clients.forEach( client => {
+                            if (client.readyState === OPEN && t === client.room) {
                                 client.send(res);
                             }
                         });
