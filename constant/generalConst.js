@@ -1,7 +1,7 @@
 const RES_STATUS = {
-    S: 'S',
-    F: 'F', //Require re-auth
-    E: 'E', //Exception
+    S: 'success',
+    F: 'warning', //Require re-auth
+    E: 'error', //Exception
 } // Status F & E will respond with msg
 
 const JWT_TOKEN = 'idctHomeWork';
@@ -10,6 +10,8 @@ const MAX_ROOM_AMOUNT = 3;
 
 const EVENT = {
     LOGIN: 'login',
+    REGISTER: 'reg',
+    LOBBY: 'lobby',
     GET_ROOM: 'getRoom',
     UPDATE_ROOM: 'updateRoom',
     ENTER_ROOM: 'enterRoom',

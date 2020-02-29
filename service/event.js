@@ -1,18 +1,20 @@
 const { OPEN } = require('ws');
 const jwt = require('jsonwebtoken');
-const handleLogin = require('./login');
+const { handleLogin, handleRegister } = require('./login');
 const { handleGetRoom, handleEnterRoom, handleExitRoom, handleStartGame, handleMove } = require('./room');
 const { JWT_TOKEN, RES_STATUS, EVENT, TARGET } = require('../constant/generalConst');
 
-module.exports = (wss, ws, msg) => {
+module.exports = (db, wss, ws, msg) => {
     try {
         console.log('[handleEvent] - Start');
         const payload = JSON.parse(msg);
         const { token, event } = payload;
         console.log('[handleEvent] - Payload:');
         console.log(msg);
-        if(EVENT.LOGIN === event) {
-            handleLogin(ws, payload);
+        if (EVENT.LOGIN === event) {
+            handleLogin(db, ws, payload);
+        } else if (EVENT.REGISTER === event) {
+            handleRegister(db, ws, payload);
         } else {
             jwt.verify(token, JWT_TOKEN, (err, decoded) => {
                 if (err) {

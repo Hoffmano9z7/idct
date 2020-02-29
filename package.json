@@ -4,13 +4,15 @@
   "main": "server.js",
   "dependencies": {
     "jsonwebtoken": "8.5.1",
+    "mongodb": "^3.5.4",
     "ws": "7.2.1"
   },
   "scripts": {
     "start": "nodemon server",
     "build": "docker build -t idct:latest .",
     "drun": "docker run -it -d -p 5000:5000 idct:latest",
-    "push": "git push origin master"
+    "push": "git push origin master",
+    "dpush": "heroku container:push web --app=idct"
   },
   "author": "Hoffman Man"
 }
