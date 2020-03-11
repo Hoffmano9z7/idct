@@ -5,7 +5,11 @@ const initializeDatabases = require('./conn');
 
 initializeDatabases().then(db => {
     wss.on('connection', ws => {
+        console.log('New connection opened!')
         ws.on('message', msg => handleEvent(db, wss, ws, msg));
+    });
+    wss.on('error', e => {
+        console.log(e);
     });
 }).catch( err => {
     console.error('Failed to make all database connections!');

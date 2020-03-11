@@ -48,23 +48,27 @@ const handleEnterRoom = (ws, payload) => {
     } else {
         let playerObj = { ...playerSchma };
         playerObj.id = id;
-        if (!newRoomObj.a) {
+        if (!newRoomObj.a.id) {
             newRoomObj.a = playerObj
-        } else if (!newRoomObj.b) {
+        } else if (!newRoomObj.b.id) {
             newRoomObj.b = playerObj;
         } else {
             newRoomObj.s.push(id);
         }
     }
     const token = signAuth({id});
-    const res = {
+    let res = {
         status: RES_STATUS.S,
-        action: EVENT.UPDATE_ROOM,
+        action: EVENT.ENTER_ROOM,
         room,
+        roomNum,
         token
     }
+    let result = {...res};
+    ws.send(JSON.stringify(res));
+    result.action = EVENT.UPDATE_ROOM;
     console.log('[handleEnterRoom] - End');
-    return res;
+    return result;
 }
 
 const handleExitRoom = (ws, payload) => {
@@ -102,10 +106,13 @@ const handleExitRoom = (ws, payload) => {
         room,
         token
     }
-    console.log('[handleExitRoom] - End');
     if (!isRequestValid)
         throw 'User is not in this room!';
-    return res;
+    let result = {...res};
+    ws.send(JSON.stringify(res));
+    result.action = EVENT.EXIT_ROOM;
+    console.log('[handleExitRoom] - End');
+    return result;
 }
 
 const handlePlayerReady = payload => {

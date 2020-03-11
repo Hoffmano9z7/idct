@@ -11,8 +11,10 @@
     "start": "nodemon server",
     "build": "docker build -t idct:latest .",
     "drun": "docker run -it -d -p 5000:5000 idct:latest",
+    "loginh": "heroku container:login",
     "push": "git push origin master",
-    "dpush": "heroku container:push web --app=idct"
+    "dpush": "heroku container:push web --app=idct",
+    "release": "heroku container:release web --app=idct"
   },
   "author": "Hoffman Man"
 }

@@ -34,10 +34,10 @@ module.exports = (db, wss, ws, msg) => {
                     if(EVENT.GET_ROOM === event) {
                         res = handleGetRoom({ ...payload, ...decoded });
                     } else if(EVENT.ENTER_ROOM === event) {
-                        resTarget = TARGET.BROADCAST;
+                        resTarget = TARGET.BROADCAST_WITHOUT_SELF;
                         res = handleEnterRoom(ws, { ...payload, ...decoded });
                     } else if (EVENT.EXIT_ROOM === event) {
-                        resTarget = TARGET.BROADCAST;
+                        resTarget = TARGET.BROADCAST_WITHOUT_SELF;
                         res = handleExitRoom(ws, { ...payload, ...decoded });
                     } else if (EVENT.READY === event) {
                         resTarget = TARGET.ROOM;
@@ -57,10 +57,17 @@ module.exports = (db, wss, ws, msg) => {
                                 client.send(res);
                             }
                         });
-                    } else if(TARGET.ROOM === resTarget) {
-                        const t = ws.room;
+                    } else if(TARGET.BROADCAST_WITHOUT_SELF === resTarget) {
+                        const r = ws.room;
                         wss.clients.forEach( client => {
-                            if (client.readyState === OPEN && t === client.room) {
+                            if (client !== ws && client.readyState === WebSocket.OPEN && r === client.room) {
+                                client.send(res);
+                            }
+                        });
+                    } else if(TARGET.ROOM === resTarget) {
+                        const r = ws.room;
+                        wss.clients.forEach( client => {
+                            if (client.readyState === OPEN && r === client.room) {
                                 client.send(res);
                             }
                         });

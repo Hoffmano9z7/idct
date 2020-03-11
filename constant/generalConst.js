@@ -27,6 +27,7 @@ const TARGET = {
     SELF:'S',
     BROADCAST:'B',
     ROOM: 'R',
+    BROADCAST_WITHOUT_SELF: 'W',
 }
 
 module.exports = {
